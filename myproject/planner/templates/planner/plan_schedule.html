@@ -1,0 +1,495 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>일정 만들기 - 여행 플래너</title>
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* 상단 캘린더 입력 영역 (헤더) 스타일 */
+    .calendar-header {
+      background-color: #f1f3f5;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    .calendar-header .form-control {
+      display: inline-block;
+      width: auto;
+      margin-right: 10px;
+    }
+    .calendar-header .btn {
+      margin-left: 10px;
+    }
+    /* 메인 콘텐츠 영역 */
+    .main-content {
+      margin-top: 30px;
+    }
+    /* 사용자 지정 Flexbox 그리드 */
+    .custom-row {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    /* 사용자 지정 컬럼: 첫 세 영역 15%씩, 네 번째 영역 55% */
+    .col-custom-15 {
+      flex: 0 0 15%;
+      max-width: 15%;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .col-custom-55 {
+      flex: 0 0 55%;
+      max-width: 55%;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    /* 각 영역 내부 스타일 */
+    .day-planner, .selected-itinerary, .recommended-places, .map-container {
+      background-color: #fff;
+      border: 1px solid #dee2e6;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      min-height: 200px;
+    }
+    .day-planner h5,
+    .selected-itinerary h5,
+    .recommended-places h5,
+    .map-container h5 {
+      margin-bottom: 10px;
+    }
+    .day-btn {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    .itinerary-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #dee2e6;
+      padding: 5px 0;
+    }
+    .itinerary-item .delete-btn {
+      font-size: 1rem;
+      padding: 0 6px;
+      background-color: #dc3545;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .recommended-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #dee2e6;
+      padding: 5px 0;
+    }
+    .recommended-item .add-btn {
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .recommended-item img {
+    width: 100%;  /* 가로 크기 100%로 설정 */
+    height: auto; /* 비율에 맞춰 세로 크기 자동 조정 */
+    max-width: 200px; /* 최대 가로 크기 제한 */
+    max-height: 150px; /* 최대 세로 크기 제한 */
+    object-fit: cover;  /* 비율을 맞추면서 잘라서 크기에 맞게 배치 */
+    border-radius: 8px;  /* 둥근 모서리 적용 */
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- 상단 캘린더 입력 영역 (헤더) -->
+  <div class="container calendar-header">
+    <div class="row align-items-center">
+      <div class="col-md-4">
+        <input type="text" id="travelTitle" class="form-control" placeholder="전체 여행 제목 입력">
+      </div>
+      <div class="col-md-4">
+        <input type="date" id="globalStartDate" class="form-control">
+        <input type="date" id="globalEndDate" class="form-control mt-1">
+      </div>
+      <div class="col-md-4 text-end">
+        <button type="button" id="saveSchedule" class="btn btn-primary">일정 저장</button>
+        <button type="button" id="closeSchedule" class="btn btn-secondary">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 콘텐츠 영역: Flexbox 그리드 -->
+  <div class="container main-content">
+    <div class="custom-row">
+      <!-- DAY Planner 영역 (15%) -->
+      <div class="col-custom-15">
+        <div class="day-planner">
+          <h5>일정</h5>
+          <div id="dayButtons"></div>
+        </div>
+      </div>
+      <!-- 선택된 일정 영역 (15%) -->
+      <div class="col-custom-15">
+        <div class="selected-itinerary">
+          <div id="selectedItinerary"></div>
+        </div>
+      </div>
+      <!-- 추천 장소 영역 (15%) -->
+      <div class="col-custom-15">
+        <div class="recommended-places">
+          <h5>추천 장소</h5>
+          <p id="destinationDisplay">{{ destination|default:"여행지 선택 안됨" }}</p>
+          <div id="recommendedList"></div>
+        </div>
+      </div>
+      <!-- 지도 영역 (55%) -->
+      <div class="col-custom-55">
+        <div class="map-container">
+          <h5 id="mapHeading">{{ destination|default:"지도" }}</h5>
+          <div class="mb-2">
+            <div class="input-group">
+              <input type="text" id="travelSearchInput" class="form-control" placeholder="여행지 검색">
+              <button type="button" id="travelSearchBtn" class="btn btn-secondary">검색</button>
+            </div>
+          </div>
+          <div id="map"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery 및 Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Google Maps API -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_map_api_key }}&callback=initMap"></script>
+
+  <script>
+    var currentDay = null;
+    var itineraries = {};
+    var map;
+    var markers = [];
+
+    function initMap() {
+      var mapCenter = {
+        lat: parseFloat("{{ map_center.lat }}"),
+        lng: parseFloat("{{ map_center.lng }}")
+      };
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: mapCenter
+      });
+
+      // 구글 추천 데이터로 마커 추가 (구글 데이터가 있을 경우)
+      var initialData = JSON.parse('{{ recommended_json|escapejs }}');
+      var recommendedGoogle = initialData.recommended_google || [];
+
+      // 기존 마커 제거
+      markers.forEach(function (marker) {
+        marker.setMap(null);
+      });
+      markers = [];
+
+      recommendedGoogle.forEach(function (place) {
+        var lat = parseFloat(place.lat);
+        var lng = parseFloat(place.lng);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          var marker = new google.maps.Marker({
+            position: {lat: lat, lng: lng},
+            map: map,
+            title: place.name
+          });
+          markers.push(marker); // 배열에 마커 추가
+        }
+      });
+    }
+
+    function addMarkers(places) {
+      // 기존 마커 삭제
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+
+      // 새로운 마커 추가
+      places.forEach(function (place) {
+        var lat = parseFloat(place.lat);
+        var lng = parseFloat(place.lng);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          var marker = new google.maps.Marker({
+            position: {lat: lat, lng: lng},
+            map: map,
+            title: place.name
+          });
+          markers.push(marker);
+        }
+      });
+    }
+
+    $(document).ready(function () {
+      $("#travelSearchBtn").click(function (event) {
+        event.preventDefault();
+        var searchValue = $("#travelSearchInput").val().trim();
+        if (searchValue) {
+          $.ajax({
+            url: "{% url 'update_destination' %}",
+            type: "GET",
+            data: {destination: searchValue},
+            success: function (response) {
+              if (response.map_center) {
+                var newCenter = new google.maps.LatLng(response.map_center.lat, response.map_center.lng);
+                map.setCenter(newCenter);
+              }
+
+              // 검색 후 마커 업데이트 추가
+              addMarkers(response.recommended_places);
+
+              // 한국관광공사 API에서 가져온 장소에 이미지 추가
+              var recommendedHTML = "";
+              if (response.recommended_places.length > 0) {
+                response.recommended_places.forEach(function (place) {
+                  var imageUrl = place.firstimage2 || "https://via.placeholder.com/200?text=No+Image"; // 이미지 URL이 없으면 기본 이미지 사용
+                  recommendedHTML += `<div class="recommended-item">
+                                        <span>${place.name}</span>
+                                        <img src="${imageUrl}" alt="${place.name}" class="recommended-image">
+                                        <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
+                                      </div>`;
+                });
+              } else {
+                recommendedHTML = "<p>추천 장소 정보가 없습니다.</p>";
+              }
+
+              // 추천 장소 리스트에 이미지 추가
+              $("#recommendedList").html(recommendedHTML);
+            }
+          });
+        }
+      });
+    });
+
+    function updateRecommendedList(initialData) {
+      var recommendedHTML = "";
+      if (initialData && initialData.length > 0) {
+        initialData.forEach(function (place) {
+          var imageUrl = place.firstimage2 || "https://via.placeholder.com/200?text=No+Image"; // 이미지 URL이 없으면 기본 이미지 사용
+          recommendedHTML += `<div class="recommended-item">
+                                <span>${place.name}</span>
+                                <img src="${imageUrl}" alt="${place.name}" class="recommended-image">
+                                <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
+                              </div>`;
+        });
+      } else {
+        recommendedHTML = "<p>추천 장소 정보가 없습니다.</p>";
+      }
+      $("#recommendedList").html(recommendedHTML);
+    }
+
+    function updateItineraryDisplay() {
+      $("#selectedItinerary").empty();
+      $("#selectedItinerary").append("<h3>DAY " + currentDay + "</h3>");
+      var items = itineraries[currentDay];
+      if (!items || items.length === 0) {
+        $("#selectedItinerary").append("<p>일정이 없습니다.</p>");
+      } else {
+        items.forEach(function (item, index) {
+          var html = `<div class="itinerary-item" data-index="${index}">
+                        <span>${item.name}</span>
+                        <input type="text" class="form-control form-control-sm itinerary-memo" placeholder="메모" value="${item.memo ? item.memo : ''}">
+                        <button type="button" class="delete-btn btn btn-danger btn-sm">-</button>
+                      </div>`;
+          $("#selectedItinerary").append(html);
+        });
+      }
+    }
+
+    $(document).ready(function () {
+      console.log("Document ready");
+      var initialRecommended = JSON.parse('{{ recommended_json|escapejs }}');
+      updateRecommendedList(initialRecommended);
+
+      $("#globalStartDate, #globalEndDate").on("change", function () {
+        var startDate = $("#globalStartDate").val();
+        var endDate = $("#globalEndDate").val();
+        if (!startDate || !endDate) return;
+        var start = new Date(startDate);
+        var end = new Date(endDate);
+        if (end < start) {
+          alert("종료 날짜는 시작 날짜보다 뒤여야 합니다.");
+          return;
+        }
+        var timeDiff = end - start;
+        var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+        $("#dayButtons").empty();
+        itineraries = {};
+        for (var i = 1; i <= days; i++) {
+          itineraries[i] = [];
+          $("#dayButtons").append(`<button type="button" class="btn btn-outline-secondary mb-2 day-btn" data-day="${i}">DAY ${i}</button>`);
+        }
+        currentDay = 1;
+        $(".day-btn").first().addClass("active");
+        updateItineraryDisplay();
+      });
+
+      $(document).on("click", ".day-btn", function () {
+        $(".day-btn").removeClass("active");
+        $(this).addClass("active");
+        currentDay = $(this).data("day");
+        updateItineraryDisplay();
+      });
+
+      $(document).on("click", ".add-place", function () {
+        var placeDataStr = $(this).attr('data-place');
+        if (!placeDataStr) {
+          alert("추천 장소 데이터를 읽지 못했습니다.");
+          return;
+        }
+        var placeData = JSON.parse(placeDataStr);
+        if (!currentDay) {
+          alert("먼저 날짜를 설정해 주세요.");
+          return;
+        }
+        placeData.memo = "";
+        itineraries[currentDay].push(placeData);
+        updateItineraryDisplay();
+      });
+
+      $(document).on("click", ".delete-btn", function () {
+        var idx = $(this).closest(".itinerary-item").data("index");
+        itineraries[currentDay].splice(idx, 1);
+        updateItineraryDisplay();
+      });
+
+      $(document).on("blur", ".itinerary-memo", function () {
+        var idx = $(this).closest(".itinerary-item").data("index");
+        var memoValue = $(this).val();
+        if (itineraries[currentDay] && itineraries[currentDay][idx]) {
+          itineraries[currentDay][idx].memo = memoValue;
+        }
+      });
+
+      $("#travelSearchBtn").click(function(event){
+        event.preventDefault();
+        var searchValue = $("#travelSearchInput").val().trim();
+        if(searchValue) {
+          $.ajax({
+            url: "{% url 'update_destination' %}",
+            type: "GET",
+            data: { destination: searchValue },
+            success: function(response) {
+              $("#destinationDisplay").text(response.destination);
+              $("#mapHeading").text(response.destination);
+              if(response.map_center) {
+                var newCenter = new google.maps.LatLng(response.map_center.lat, response.map_center.lng);
+                map.setCenter(newCenter);
+              }
+              var recommendedHTML = "";
+              if(response.recommended_places.length > 0) {
+                response.recommended_places.forEach(function(place) {
+                  recommendedHTML += `<div class="recommended-item">
+                                        <span>${place.name}</span>
+                                        <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
+                                      </div>`;
+                });
+              } else {
+                recommendedHTML = "<p>추천 장소 정보가 없습니다.</p>";
+              }
+              $("#recommendedList").html(recommendedHTML);
+            },
+            error: function(xhr) {
+              alert("오류: " + xhr.responseJSON.message);
+            }
+          });
+        } else {
+          alert("검색어를 입력해 주세요.");
+        }
+      });
+
+      $("#recommendSearchBtn").click(function(event){
+        event.preventDefault();
+        var searchValue = $("#recommendSearch").val().trim();
+        if(searchValue) {
+          $.ajax({
+            url: "{% url 'update_destination' %}",
+            type: "GET",
+            data: { destination: searchValue },
+            success: function(response) {
+              $("#destinationDisplay").text(response.destination);
+              $("#mapHeading").text(response.destination);
+              if(response.map_center) {
+                var newCenter = new google.maps.LatLng(response.map_center.lat, response.map_center.lng);
+                map.setCenter(newCenter);
+              }
+              var recommendedHTML = "";
+              if(response.recommended_places.length > 0) {
+                response.recommended_places.forEach(function(place) {
+                  recommendedHTML += `<div class="recommended-item">
+                                        <span>${place.name}</span>
+                                        <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
+                                      </div>`;
+                });
+              } else {
+                recommendedHTML = "<p>추천 장소 정보가 없습니다.</p>";
+              }
+              $("#recommendedList").html(recommendedHTML);
+            },
+            error: function(xhr) {
+              alert("오류: " + xhr.responseJSON.message);
+            }
+          });
+        } else {
+          alert("검색어를 입력해 주세요.");
+        }
+      });
+
+      $("#saveSchedule").click(function(){
+        var travelTitle = $("#travelTitle").val().trim();
+        var startDate = $("#globalStartDate").val();
+        var endDate = $("#globalEndDate").val();
+        var destination = $("#destinationDisplay").text().trim();
+        if (!travelTitle) {
+          alert("여행 제목을 입력해 주세요.");
+          return;
+        }
+        if (!startDate || !endDate) {
+          alert("여행 시작일과 종료일을 모두 입력해 주세요.");
+          return;
+        }
+        if (destination === "여행지 선택 안됨" || destination === "") {
+          alert("여행지를 선택해 주세요.");
+          return;
+        }
+        var payload = {
+          travel_title: travelTitle,
+          start_date: startDate,
+          end_date: endDate,
+          destination: destination,
+          itineraries: itineraries
+        };
+        $.ajax({
+          url: "{% url 'save_schedule' %}",
+          type: "POST",
+          data: JSON.stringify(payload),
+          contentType: "application/json",
+          headers: { "X-CSRFToken": "{{ csrf_token }}" },
+          success: function(response){
+            alert(response.message);
+            window.location.href = "{% url 'main_page' %}";
+          },
+          error: function(xhr){
+            alert("오류: " + xhr.responseJSON.message);
+          }
+        });
+      });
+
+      $("#closeSchedule").click(function(){
+        if (confirm("정말 닫으시겠습니까? 변경사항은 저장되지 않습니다.")) {
+          location.reload();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

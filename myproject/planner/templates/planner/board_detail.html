@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ board.title }} - 게시글 상세보기</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+   <div class="container mt-5">
+       <h2>{{ board.title }}</h2>
+       <p class="text-muted">작성자: {{ board.author.name }} | {{ board.created_at }}</p>
+       <p>{{ board.content }}</p>
+       {% if board.author.email == request.session.user_email %}
+         <a href="{% url 'board_update' board.id %}" class="btn btn-primary">수정</a>
+         <a href="{% url 'board_delete' board.id %}" class="btn btn-danger">삭제</a>
+       {% endif %}
+       <a href="{% url 'board_list' %}" class="btn btn-secondary">목록</a>
+
+       <hr>
+       <h4>댓글</h4>
+       <div id="comment-list">
+           {% for comment in board.comments.all %}
+           <div class="card mb-2" id="comment-{{ comment.id }}">
+               <div class="card-body">
+                   <p><strong>{{ comment.author.name }}</strong> <small class="text-muted">{{ comment.created_at }}</small></p>
+                   <p class="comment-text">{{ comment.content }}</p>
+
+                   {% if comment.author.email == request.session.user_email %}
+                   <!-- 수정 입력창 (숨김 상태) -->
+                   <textarea class="form-control edit-comment-input d-none" rows="2">{{ comment.content }}</textarea>
+
+                   <!-- 버튼 그룹 -->
+                   <button class="btn btn-sm btn-primary edit-comment" data-comment-id="{{ comment.id }}">수정</button>
+                   <button class="btn btn-sm btn-success save-comment d-none" data-comment-id="{{ comment.id }}">저장</button>
+                   <button class="btn btn-sm btn-danger delete-comment" data-comment-id="{{ comment.id }}">삭제</button>
+                   {% endif %}
+               </div>
+           </div>
+           {% empty %}
+           <p>등록된 댓글이 없습니다.</p>
+           {% endfor %}
+       </div>
+
+       <hr>
+       <h5>댓글 작성</h5>
+       <form id="commentForm" method="post">
+           {% csrf_token %}
+           <div class="mb-3">
+               <textarea class="form-control" id="commentContent" name="content" rows="3" placeholder="댓글을 입력하세요." required></textarea>
+           </div>
+           <button type="submit" class="btn btn-primary">댓글 작성</button>
+       </form>
+
+   </div>
+
+   <script>
+      $(document).ready(function(){
+         // 댓글 작성 처리
+         $("#commentForm").submit(function(event){
+            event.preventDefault();
+            $.ajax({
+               url: "{% url 'comment_create' board.id %}",
+               type: "POST",
+               data: $(this).serialize(),
+               headers: { "X-CSRFToken": "{{ csrf_token }}" },
+               success: function(response){
+                  if(response.status === "success"){
+                     alert(response.message);
+                     var comment = response.comment;
+                     var commentHtml = '<div class="card mb-2" id="comment-' + comment.id + '">';
+                     commentHtml += '<div class="card-body">';
+                     commentHtml += '<p><strong>' + comment.author + '</strong> <small class="text-muted">' + comment.created_at + '</small></p>';
+                     commentHtml += '<p class="comment-text">' + comment.content + '</p>';
+                     commentHtml += '<textarea class="form-control edit-comment-input d-none" rows="2">' + comment.content + '</textarea>';
+                     commentHtml += '<button class="btn btn-sm btn-primary edit-comment" data-comment-id="' + comment.id + '">수정</button>';
+                     commentHtml += '<button class="btn btn-sm btn-success save-comment d-none" data-comment-id="' + comment.id + '">저장</button>';
+                     commentHtml += '<button class="btn btn-sm btn-danger delete-comment" data-comment-id="' + comment.id + '">삭제</button>';
+                     commentHtml += '</div></div>';
+                     $("#comment-list").prepend(commentHtml);
+                     $("#commentContent").val('');
+                  }
+               },
+               error: function(xhr){
+                  alert("오류: " + xhr.responseJSON.message);
+               }
+            });
+         });
+
+         // 댓글 삭제 처리
+         $("#comment-list").on("click", ".delete-comment", function(){
+            var commentId = $(this).data("comment-id");
+            if(confirm("정말 삭제하시겠습니까?")){
+               $.ajax({
+                  url: "/comment/" + commentId + "/delete/",
+                  type: "POST",
+                  data: {},
+                  headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                  success: function(response){
+                     if(response.status === "success"){
+                        alert(response.message);
+                        $("#comment-" + commentId).remove();
+                     }
+                  },
+                  error: function(xhr){
+                     alert("오류: " + xhr.responseJSON.message);
+                  }
+               });
+            }
+         });
+
+         // 댓글 수정 버튼 클릭 시 입력창 표시
+         $("#comment-list").on("click", ".edit-comment", function(){
+            var commentId = $(this).data("comment-id");
+            var commentCard = $("#comment-" + commentId);
+            commentCard.find(".comment-text").addClass("d-none");
+            commentCard.find(".edit-comment-input").removeClass("d-none");
+            commentCard.find(".edit-comment").addClass("d-none");
+            commentCard.find(".save-comment").removeClass("d-none");
+         });
+
+         // 수정 내용 저장
+         $("#comment-list").on("click", ".save-comment", function(){
+            var commentId = $(this).data("comment-id");
+            var commentCard = $("#comment-" + commentId);
+            var updatedContent = commentCard.find(".edit-comment-input").val();
+
+            $.ajax({
+               url: "/comment/" + commentId + "/update/",
+               type: "POST",
+               data: { content: updatedContent },
+               headers: { "X-CSRFToken": "{{ csrf_token }}" },
+               success: function(response){
+                  if(response.status === "success"){
+                     alert(response.message);
+                     commentCard.find(".comment-text").text(updatedContent).removeClass("d-none");
+                     commentCard.find(".edit-comment-input").addClass("d-none");
+                     commentCard.find(".edit-comment").removeClass("d-none");
+                     commentCard.find(".save-comment").addClass("d-none");
+                  }
+               },
+               error: function(xhr){
+                  alert("오류: " + xhr.responseJSON.message);
+               }
+            });
+         });
+      });
+   </script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>여행 플래너 - 메인페이지</title>
+  <!-- Bootstrap CSS (CDN 사용) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .region-card {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .region-card img {
+      width: 100%;
+      height: auto;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .region-name {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+    /* 메인 콘텐츠와 캐러셀의 폭을 통일하기 위한 컨테이너 */
+    .main-container {
+      max-width: 1140px;  /* 원하는 최대 너비로 조정 (예: 1140px) */
+      margin: 0 auto;
+    }
+    /* 캐러셀 영역 CSS 수정 */
+    #carouselExampleIndicators {
+      margin-bottom: 30px;
+    }
+    #carouselExampleIndicators .carousel-inner img {
+      height: 400px;           /* 고정 높이 */
+      width: 100%;             /* 컨테이너 너비에 맞춤 */
+      object-fit: contain;     /* 전체 이미지가 보이도록, 빈 공간은 배경색으로 채움 */
+      background-color: #f8f9fa; /* 빈 공간 배경색 */
+    }
+  </style>
+</head>
+<body>
+  <!-- 전체 콘텐츠를 감싸는 메인 컨테이너 (헤더, 캐러셀, 콘텐츠 영역 통일) -->
+  <div class="main-container">
+    <!-- 헤더 영역 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">여행 플래너</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- 전체 메뉴를 하나의 ul로 묶고, ms-auto로 오른쪽 정렬 -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="#">이용방법</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'board_list' %}">게시판</a>
+            </li>
+            {% if request.session.user_email %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                  {{ request.session.user_name }}님
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                  <li><a class="dropdown-item" href="{% url 'my_page' %}">마이페이지</a></li>
+                  <li><a class="dropdown-item" href="{% url 'logout' %}">로그아웃</a></li>
+                </ul>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">로그인</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 캐러셀 영역 -->
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="3"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="4"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="5"></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="{% static 'images/main_logo.png' %}" class="d-block w-100" alt="Slide 1">
+        </div>
+        <div class="carousel-item">
+          <img src="{% static 'images/main_img01.png' %}" class="d-block w-100" alt="Slide 2">
+        </div>
+        <div class="carousel-item">
+          <img src="{% static 'images/main_img02.png' %}" class="d-block w-100" alt="Slide 3">
+        </div>
+        <div class="carousel-item">
+          <img src="{% static 'images/main_img03.png' %}" class="d-block w-100" alt="Slide 3">
+        </div>
+        <div class="carousel-item">
+          <img src="{% static 'images/main_img04.png' %}" class="d-block w-100" alt="Slide 3">
+        </div>
+        <div class="carousel-item">
+          <img src="{% static 'images/main_img05.png' %}" class="d-block w-100" alt="Slide 3">
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+    </div>
+
+    <!-- 메인 콘텐츠 영역: 여행지 검색 및 여행지 그리드 -->
+    <div class="container mt-5">
+      <!-- 여행지 검색 입력란 -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="input-group">
+            <input type="text" id="travelSearchInput" class="form-control" placeholder="여행지를 입력하세요. ex) 여수, 춘천 등">
+            <button class="btn btn-outline-secondary" id="travelSearchBtn" type="button">검색</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 여행지 그리드 (3행 4열) -->
+      <div class="row">
+        {% for region in regions %}
+          <div class="col-md-3 col-sm-6">
+            <div class="region-card">
+              <a href="{% url 'plan_schedule' %}?destination={{ region.name }}">
+                <img src="{% static 'images/regions/'|add:region.img %}" alt="{{ region.name }}">
+                <div class="region-name">{{ region.name }}</div>
+              </a>
+            </div>
+          </div>
+          {% if forloop.counter|divisibleby:"4" and not forloop.last %}
+            </div><div class="row">
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div> <!-- .main-container 끝 -->
+
+  <!-- 로그인 모달 창 -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="loginForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">로그인</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+          </div>
+          <div class="modal-body">
+            <!-- 이메일 입력 -->
+            <div class="mb-3">
+              <label for="loginEmail" class="form-label">이메일</label>
+              <input type="email" class="form-control" id="loginEmail" name="email" required>
+              <div id="loginEmailError" class="error-message">
+                올바른 이메일 형식이 아닙니다. 다시 입력해 주세요.
+              </div>
+            </div>
+            <!-- 비밀번호 입력 -->
+            <div class="mb-3">
+              <label for="loginPassword" class="form-label">비밀번호</label>
+              <input type="password" class="form-control" id="loginPassword" name="password" required>
+            </div>
+          </div>
+          <div class="modal-footer d-flex flex-column">
+            <button type="submit" class="btn btn-primary w-100">로그인</button>
+            <div class="mt-2">
+              <a href="{% url 'signup' %}">회원가입</a> |
+              <a href="{% url 'password_reset' %}">비밀번호 찾기</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery (CDN) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Bootstrap JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    $(document).ready(function(){
+      console.log("Document ready - 로그인 모달 페이지");
+
+      // 로그인 모달: 이메일 정규식
+      var emailRegex = /^[\w\.-]+@[\w\.-]+\.\w+$/;
+
+      // 실시간 검증: 이메일 입력란 (blur, keyup)
+      $("#loginEmail").on("blur keyup", function(){
+        var email = $(this).val();
+        if (!emailRegex.test(email)) {
+          $("#loginEmailError").show();
+        } else {
+          $("#loginEmailError").hide();
+        }
+      });
+
+      // 로그인 폼 제출 시 이메일 형식을 재검증 및 AJAX 요청
+      $("#loginForm").submit(function(event){
+        event.preventDefault();
+        var email = $("#loginEmail").val();
+        if (!emailRegex.test(email)) {
+          $("#loginEmailError").show();
+          return false;
+        }
+        var formData = $(this).serialize();
+        $.ajax({
+          url: "{% url 'login' %}",
+          type: "POST",
+          data: formData,
+          headers: { "X-CSRFToken": "{{ csrf_token }}" },
+          success: function(response){
+            if(response.status === "success"){
+              alert("로그인 성공: " + response.user_name);
+              location.reload();
+            }
+          },
+          error: function(xhr, status, error){
+            alert("로그인 실패: " + xhr.responseJSON.message);
+          }
+        });
+      });
+
+      // 여행지 검색 버튼 클릭 시
+      $("#travelSearchBtn").click(function(){
+        var searchValue = $("#travelSearchInput").val().trim();
+        if(searchValue) {
+          window.location.href = "{% url 'plan_schedule' %}?destination=" + encodeURIComponent(searchValue);
+        } else {
+          alert("검색어를 입력해 주세요.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
