@@ -531,9 +531,8 @@ def update_destination_view(request):
     Google Places API (Text Search, Nearby Search)와 한국관광공사 API를 사용해
     추천 장소 데이터를 수집하고, 해당 지역의 지도 중심 좌표와 함께 JSON으로 반환합니다.
     """
-    destination = request.GET.get("destination", "").strip()
-
-    # 초기값 설정
+    # GET 요청 처리: 기존 코드 그대로 추천 장소 수집 등
+    destination = request.GET.get("destination", "")
     recommended_places = []
     search_lat, search_lng = None, None
 
@@ -554,7 +553,6 @@ def update_destination_view(request):
                     "lat": place["geometry"]["location"]["lat"],
                     "lng": place["geometry"]["location"]["lng"],
                 })
-
         # 2. Google Places API - Nearby Search
         if search_lat and search_lng:
             nearby_url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={search_lat},{search_lng}&radius=2000&language=ko&key={GOOGLE_MAPS_API_KEY}"
@@ -568,13 +566,53 @@ def update_destination_view(request):
                     "lat": place["geometry"]["location"]["lat"],
                     "lng": place["geometry"]["location"]["lng"],
                 })
+        # 3. 한국관광공사 API
+        api_url = "http://apis.data.go.kr/B551011/KorService1/searchKeyword1"
+        params = {
+            "serviceKey": KTO_API_KEY,
+            "keyword": destination,
+            "numOfRows": 100,
+            "pageNo": 1,
+            "MobileOS": "ETC",
+            "MobileApp": "AppTest",
+            "_type": "json"
+        }
+        try:
+            ktour_response = requests.get(api_url, params=params)
+            ktour_response.raise_for_status()  # HTTP 오류 시 예외 발생
+            ktour_places = ktour_response.json()
+            # 디버깅: 서버 콘솔에 API 응답 출력
+            print("KTO API 응답:", json.dumps(ktour_places, indent=2, ensure_ascii=False))
+            items = ktour_places.get("response", {}).get("body", {}).get("items", {}).get("item", [])
 
-    # 지도 중심 좌표 결정 (Google Places API에서 얻은 좌표가 없으면 기본값 사용)
+            # items가 딕셔너리인 경우 리스트로 변환
+            if isinstance(items, dict):
+                items = [items]
+
+            for place in items:
+                recommended_places.append({
+                    "name": place.get("title", ""),
+                    "address": place.get("addr1", ""),
+                    "description": place.get("contenttypeid", "설명 없음"),
+                    "firstimage2": place.get("firstimage2", "https://via.placeholder.com/200?text=No+Image"),
+                    "lat": place.get("mapx", ""),
+                    "lng": place.get("mapy", ""),
+                    "source": "kto"
+                })
+        except requests.exceptions.RequestException as e:
+            print(f"한국관광공사 API 요청 중 오류 발생: {e}")
+
     if search_lat is None or search_lng is None:
         map_center = {"lat": 36.5, "lng": 127.5}
     else:
         map_center = {"lat": search_lat, "lng": search_lng}
-
+    context = {
+        "destination": destination,
+        "recommended_places": recommended_places,
+        "recommended_json": json.dumps(recommended_places),
+        "google_map_api_key": GOOGLE_MAPS_API_KEY,
+        "map_center": map_center,
+    }
     return JsonResponse({
         "destination": destination,
         "map_center": map_center,

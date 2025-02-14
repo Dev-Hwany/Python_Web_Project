@@ -92,16 +92,26 @@
       cursor: pointer;
     }
     .recommended-item img {
-    width: 100%;  /* 가로 크기 100%로 설정 */
-    height: auto; /* 비율에 맞춰 세로 크기 자동 조정 */
-    max-width: 200px; /* 최대 가로 크기 제한 */
-    max-height: 150px; /* 최대 세로 크기 제한 */
-    object-fit: cover;  /* 비율을 맞추면서 잘라서 크기에 맞게 배치 */
-    border-radius: 8px;  /* 둥근 모서리 적용 */
+      width: 50px; /* 부모 요소에 맞춰서 크기 자동 조정 */
+      height: 50px; /* 비율에 맞게 세로 크기 자동 조정 */
+      max-width: 100px; /* 최대 가로 크기 제한 */
+      max-height: 70px; /* 최대 세로 크기 제한 */
+      margin-right: 10px;
+      object-fit: cover; /* 비율을 맞추면서 잘라서 크기에 맞게 배치 */
+      border-radius: 5px; /* 둥근 모서리 적용 */
+    }
+    .recommended-item .recommended-item {
+      flex: 1;
+      margin-right: 10px;
+      overflow: hidden;
+      max-width: 70%;
+      text-overflow: ellipsis;
+    }
     #map {
       height: 400px;
       width: 100%;
     }
+
   </style>
 </head>
 <body>
@@ -251,10 +261,10 @@
               var recommendedHTML = "";
               if (response.recommended_places.length > 0) {
                 response.recommended_places.forEach(function (place) {
-                  var imageUrl = place.firstimage2 || "https://via.placeholder.com/200?text=No+Image"; // 이미지 URL이 없으면 기본 이미지 사용
+                  var imageUrl = place.firstimage2 || "https://fakeimg.pl/200x200/?retina=1&text=No+Image"; // 이미지 URL이 없으면 기본 이미지 사용
                   recommendedHTML += `<div class="recommended-item">
-                                        <span>${place.name}</span>
                                         <img src="${imageUrl}" alt="${place.name}" class="recommended-image">
+                                        <span>${place.name}</span>
                                         <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
                                       </div>`;
                 });
@@ -274,10 +284,10 @@
       var recommendedHTML = "";
       if (initialData && initialData.length > 0) {
         initialData.forEach(function (place) {
-          var imageUrl = place.firstimage2 || "https://via.placeholder.com/200?text=No+Image"; // 이미지 URL이 없으면 기본 이미지 사용
+          var imageUrl = place.firstimage2 || "https://fakeimg.pl/200x200/?retina=1&text=No+Image"; // 이미지 URL이 없으면 기본 이미지 사용
           recommendedHTML += `<div class="recommended-item">
-                                <span>${place.name}</span>
                                 <img src="${imageUrl}" alt="${place.name}" class="recommended-image">
+                                <span>${place.name}</span>
                                 <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
                               </div>`;
         });
