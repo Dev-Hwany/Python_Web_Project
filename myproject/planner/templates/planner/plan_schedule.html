@@ -195,9 +195,31 @@
         center: mapCenter
       });
 
+
       // 구글 추천 데이터로 마커 추가 (구글 데이터가 있을 경우)
       var initialData = JSON.parse('{{ recommended_json|escapejs }}');
       var recommendedGoogle = initialData.recommended_google || [];
+      // 추천 장소 데이터 가져오기
+      var recommendedPlaces = JSON.parse('{{ recommended_json|escapejs }}');
+
+      // 마커 추가
+      recommendedPlaces.forEach(function (place) {
+        var marker = new google.maps.Marker({
+          position: {lat: parseFloat(place.lat), lng: parseFloat(place.lng)},
+          map: map,
+          title: place.name
+        });
+
+        // 정보창 추가
+        var infoWindow = new google.maps.InfoWindow({
+          content: `<div><strong>${place.name}</strong><br>${place.address || '주소 정보 없음'}</div>`
+        });
+
+        // 마커 클릭 시 정보창 열기
+        marker.addListener("click", function () {
+          infoWindow.open(map, marker);
+        });
+      });
 
       // 기존 마커 제거
       markers.forEach(function (marker) {
@@ -221,7 +243,9 @@
 
     function addMarkers(places) {
       // 기존 마커 삭제
-      markers.forEach(marker => marker.setMap(null));
+      markers.forEach(function (marker) {
+        marker.setMap(null);
+      });
       markers = [];
 
       // 새로운 마커 추가
@@ -234,7 +258,7 @@
             map: map,
             title: place.name
           });
-          markers.push(marker);
+          markers.push(marker); // 배열에 마커 추가
         }
       });
     }
@@ -398,7 +422,9 @@
               var recommendedHTML = "";
               if(response.recommended_places.length > 0) {
                 response.recommended_places.forEach(function(place) {
+                  var imageUrl = place.firstimage2 || "https://fakeimg.pl/200x200/?retina=1&text=No+Image";
                   recommendedHTML += `<div class="recommended-item">
+                                        <img src="${imageUrl}" alt="${place.name}" class="recommended-image">
                                         <span>${place.name}</span>
                                         <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
                                       </div>`;
@@ -419,7 +445,7 @@
 
       $("#recommendSearchBtn").click(function(event){
         event.preventDefault();
-        var searchValue = $("#recommendSearch").val().trim();
+        var searchValue = $("#travelSearchInput").val().trim();
         if(searchValue) {
           $.ajax({
             url: "{% url 'update_destination' %}",
@@ -435,7 +461,9 @@
               var recommendedHTML = "";
               if(response.recommended_places.length > 0) {
                 response.recommended_places.forEach(function(place) {
+                  var imageUrl = place.firstimage2 || "https://fakeimg.pl/200x200/?retina=1&text=No+Image";
                   recommendedHTML += `<div class="recommended-item">
+                                        <img src="${imageUrl}" alt="${place.name}" class="recommended-image">
                                         <span>${place.name}</span>
                                         <button type="button" class="btn btn-sm btn-success add-place" data-place='${JSON.stringify(place)}'>+</button>
                                       </div>`;
