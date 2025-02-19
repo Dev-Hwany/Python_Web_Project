@@ -1,0 +1,68 @@
+/* update_profile.css */
+
+/* update_profile.html의 최상위 래퍼에 적용 */
+.update-profile-wrapper {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin: 0;
+    background-color: #ffffff;
+    border: 1px solid #ddd;       /*(선택) 테두리 추가로 박스처럼 보이게 할 수도 있음 */
+    border-radius : 10px;
+  }
+
+  /* update-profile-wrapper 내부의 제목 스타일 */
+  .update-profile-wrapper h2 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 40px !important;  /* !important를 추가하여 다른 스타일보다 우선 적용 */
+      color: #333;
+  }
+
+  /* 폼 레이블 스타일 */
+  .update-profile-wrapper .form-label {
+    font-weight: bold;
+    color: #333;
+  }
+
+  /* 입력 필드 스타일 */
+  .update-profile-wrapper .form-control {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    background-color: transparent;
+    font-size: 0.95rem;
+    color: #333;
+    padding: 8px 0;
+    margin-bottom: 1rem;
+  }
+
+  .update-profile-wrapper .form-control:focus {
+    border-bottom: 1px solid #007bff;
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* 버튼 스타일 */
+  .update-profile-wrapper .btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #0057b3bf;
+    border: none;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+  }
+
+  .update-profile-wrapper .btn-primary:hover {
+    background: #0056b3;
+  }
+
+  /* 오류 메시지 스타일 */
+  .update-profile-wrapper .error-message {
+    color: red;
+    font-size: 0.9rem;
+    display: none;
+    margin-top: 5px;
+  }

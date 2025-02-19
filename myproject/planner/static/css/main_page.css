@@ -1,0 +1,184 @@
+/* 전체 레이아웃 설정 */
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* 네비게이션 바 스타일 */
+.navbar {
+   margin-bottom: 50px;
+   background-color: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.navbar-brand {
+  font-weight: bold;
+    font-size: 1.5rem;
+    color: #0056b3;
+}
+.navbar-nav .nav-link {
+  font-size: 16px;
+  color: #333 !important;
+}
+.navbar-nav .nav-item .dropdown-menu {
+  min-width: 150px;
+}
+
+/* 캐러셀 영역 스타일 */
+#carouselExampleIndicators {
+  margin-bottom: 40px;
+}
+#carouselExampleIndicators .carousel-inner img {
+  height: 400px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* 검색 입력창 스타일 */
+.input-group {
+  max-width: 500px;
+  margin: 0 auto;
+}
+/* 🔍 검색 입력 필드 */
+#travelSearchInput {
+  flex-grow: 1; /* 입력 필드가 가능한 공간 차지 */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+/* 🔍 검색 버튼 */
+#travelSearchBtn {
+   padding: 10px 15px;
+    background-color: #0057b3bf;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 5px; /* 검색창과 버튼 사이 간격 */
+}
+
+#travelSearchBtn:hover{
+   padding: 10px 15px;
+    background-color: #0056b3;
+}
+/* 국내 여행지 */
+.tour-title {
+  font-size: 24px; /* 제목 크기 */
+  font-weight: bold;
+  margin-top: 50px; /* 헤더와의 간격 */
+  margin-bottom: 10px;
+  text-align: center;
+}
+.tour-description{
+  font-size: 18px;
+  margin-bottom: 30px; /* 🔥 설명 아래 간격 */
+    text-align: center;
+}
+/* 여행지 카드 스타일 */
+.region-link {
+    text-decoration: none;
+    color: inherit;
+}
+.region-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+.region-card:hover {
+  transform: translateY(-5px); /* 마우스 오버 시 살짝 떠오르는 효과 */
+}
+.region-card img {
+     width: 100%;
+     height: auto;
+     max-height: 150px;
+     object-fit: cover;
+     border-radius: 5px;
+}
+.region-card .card-body {
+ padding: 15px;
+}
+
+.region-name {
+    height: 50px; /* 흰색 영역 크기 감소 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: black; /* 글자색 검정 */
+    text-decoration: none; /* 밑줄 제거 */
+    pointer-events: none; /* 하이퍼링크 비활성화 */
+}
+
+/* 화살표 */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1); /* 화살표 색 반전 (흰색) */
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은 배경 */
+    padding: 10px;
+    border-radius: 50%;
+}
+
+/* 로그인 모달 스타일 */
+.modal-title{
+    text-align: center;
+    color: black;
+
+}
+.modal-content {
+  padding: 10px;
+  border-radius: 10px;
+}
+.modal-header {
+  color: white;
+  border-radius: 10px 10px 0 0;
+}
+.btn-primary {
+  background: #0057b3bf;
+  border: none;
+  border-radius: 11px;
+  margin: 0 auto;
+  height: 50px;
+}
+.btn-primary:hover {
+  background: #0056b3;
+}
+.form-label { /* 이메일, 비밀번호 등... 레이블 */
+    font-weight: bold;
+    color: #333;
+}
+.form-control { /* 입력 받는 칸 */
+    margin-right: 20px;
+    border: none;
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    background-color: transparent;
+    font-size: 0.95rem;
+    color: #333;
+    padding: 8px 0;
+}
+.form-control:focus { /* 입력 하기 위해 마우스로 누르면 강조 되는 부분 */
+    border-bottom: 1px solid #007bff;
+    outline: none;
+    box-shadow: none;
+}
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .region-card {
+    margin-bottom: 20px;
+  }
+  #carouselExampleIndicators .carousel-inner img {
+    height: 250px;
+  }
+}
+footer {
+    background-color: rgb(218, 218, 218);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    padding-top: 20px;
+    text-align: center;
+}
