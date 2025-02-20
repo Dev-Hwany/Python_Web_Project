@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ feed.author.name }}님의 피드 - 여행 플래너</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .feed-container {
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .feed-image {
+            width: 100%;
+            height: auto;
+        }
+        .feed-caption {
+            margin-top: 10px;
+        }
+        .like-section {
+            margin-top: 10px;
+        }
+        .comment-block {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        .comment-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .comment-content {
+            flex: 1;
+        }
+        .comment-edit-form {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container feed-container">
+    <div class="card">
+        {% if feed.image %}
+        <img src="{{ feed.image.url }}" alt="Feed Image" class="card-img-top feed-image">
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title">{{ feed.author.name }}</h5>
+            <p class="card-text feed-caption">{{ feed.content }}</p>
+            <p class="card-text"><small class="text-muted">{{ feed.created_at|date:"Y-m-d H:i" }}</small></p>
+            <div class="like-section">
+                <!-- 좋아요 버튼; 좋아요 토글 기능 URL은 '/feed/<feed_id>/like/'로 구현 (추후 구현) -->
+                <button type="button" class="btn btn-outline-primary btn-sm like-btn" data-feed-id="{{ feed.id }}">
+                    Like (<span class="like-count">{{ feed.likes.count }}</span>)
+                </button>
+                <!-- 좋아요 누른 사용자 목록 -->
+                <p class="mt-2">Liked by:
+                    {% for user in feed.likes.all %}
+                        {{ user.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        아직 좋아요가 없습니다.
+                    {% endfor %}
+                </p>
+            </div>
+            <hr>
+            <h5>댓글</h5>
+            <div id="comment-list">
+                {% for comment in feed.comment_set.all %}
+                    <div class="comment-block" data-comment-id="{{ comment.id }}">
+                        <div class="comment-item">
+                            <p class="mb-0 comment-content">
+                                <strong>{{ comment.author.name }}</strong>
+                                <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small><br>
+                                {{ comment.content }}
+                            </p>
+                            {% if comment.author.email == request.session.user_email %}
+                            <div>
+                                <button type="button" class="btn btn-sm btn-secondary edit-comment-btn">수정</button>
+                                <button type="button" class="btn btn-sm btn-danger delete-comment-btn">삭제</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if comment.author.email == request.session.user_email %}
+                        <div class="comment-edit-form">
+                            <textarea class="form-control comment-edit-content" rows="2">{{ comment.content }}</textarea>
+                            <div class="mt-1">
+                                <button type="button" class="btn btn-sm btn-primary save-comment-edit-btn">저장</button>
+                                <button type="button" class="btn btn-sm btn-warning cancel-comment-edit-btn">취소</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p>댓글이 없습니다.</p>
+                {% endfor %}
+            </div>
+            <hr>
+            <h6>댓글 작성</h6>
+            <form id="commentForm">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <textarea class="form-control" name="content" rows="3" placeholder="댓글을 입력하세요." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">댓글 작성</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery 및 Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function(){
+    // 좋아요 버튼 토글 (추후 구현할 API URL에 맞게 수정)
+    $('.like-btn').click(function(){
+        var btn = $(this);
+        var feedId = btn.data('feed-id');
+        $.ajax({
+            url: '/feed/' + feedId + '/like/',
+            type: 'POST',
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function(response) {
+                if(response.status === "success"){
+                    btn.find('.like-count').text(response.like_count);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr) {
+                alert("Error: " + xhr.responseJSON.message);
+            }
+        });
+    });
+
+    // 댓글 수정
+    $(document).on('click', '.edit-comment-btn', function(e){
+        e.preventDefault();
+        var block = $(this).closest('.comment-block');
+        block.find('.comment-item').hide();
+        block.find('.comment-edit-form').show();
+    });
+
+    // 댓글 수정 취소
+    $(document).on('click', '.cancel-comment-edit-btn', function(e){
+        e.preventDefault();
+        var block = $(this).closest('.comment-block');
+        block.find('.comment-edit-form').hide();
+        block.find('.comment-item').show();
+    });
+
+    // 댓글 수정 저장
+    $(document).on('click', '.save-comment-edit-btn', function(e){
+        e.preventDefault();
+        var block = $(this).closest('.comment-block');
+        var commentId = block.data('comment-id');
+        var newContent = block.find('.comment-edit-content').val().trim();
+        if(newContent === ""){
+            alert("수정할 내용을 입력해 주세요.");
+            return;
+        }
+        $.ajax({
+            url: "/comment/" + commentId + "/update/",
+            type: "POST",
+            data: { "content": newContent },
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function(response) {
+                if(response.status === "success"){
+                    block.find('.comment-content').html("<strong>" + response.comment.author + "</strong> <small class='text-muted'>" + response.comment.created_at + "</small><br>" + response.comment.content);
+                    block.find('.comment-edit-form').hide();
+                    block.find('.comment-item').show();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr) {
+                alert("댓글 수정 중 오류 발생: " + xhr.responseJSON.message);
+            }
+        });
+    });
+
+    // 댓글 작성
+    $("#commentForm").submit(function(e){
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $.ajax({
+            url: "/feed/{{ feed.id }}/comment/create/",
+            type: "POST",
+            data: formData,
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function(response){
+                if(response.status === "success"){
+                    location.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr){
+                alert("댓글 작성 중 오류: " + xhr.responseJSON.message);
+            }
+        });
+    });
+
+    // 댓글 삭제
+    $(document).on('click', '.delete-comment-btn', function(e){
+        e.preventDefault();
+        if(!confirm("정말 댓글을 삭제하시겠습니까?")) return;
+        var block = $(this).closest('.comment-block');
+        var commentId = block.data('comment-id');
+        $.ajax({
+            url: "/comment/" + commentId + "/delete/",
+            type: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function(response){
+                if(response.status === "success"){
+                    block.remove();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr){
+                alert("댓글 삭제 중 오류: " + xhr.responseJSON.message);
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

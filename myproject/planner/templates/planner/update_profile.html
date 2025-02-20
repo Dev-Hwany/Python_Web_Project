@@ -1,0 +1,119 @@
+{% load static %}
+<!-- 회원정보 수정 폼 (부분 템플릿) -->
+<div class="update-profile-wrapper">
+  <h2>회원정보 수정</h2>
+  <form id="updateProfileForm" method="post">
+    {% csrf_token %}
+
+    <!-- 이름 -->
+    <div class="mb-3">
+      <label for="name" class="form-label">이름</label>
+      <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+    </div>
+
+    <!-- 생년월일 -->
+    <div class="mb-3">
+      <label for="birth" class="form-label">생년월일</label>
+      <input type="date" class="form-control" id="birth" name="birth" value="{{ user.birth|date:'Y-m-d' }}" required>
+    </div>
+
+    <!-- 주소 -->
+    <div class="mb-3">
+      <label for="addr" class="form-label">주소</label>
+      <input type="text" class="form-control" id="addr" name="addr" value="{{ user.addr }}" required>
+    </div>
+
+    <!-- 전화번호 -->
+    <div class="mb-3">
+      <label for="phone_num" class="form-label">전화번호</label>
+      <input type="text" class="form-control" id="phone_num" name="phone_num" value="{{ user.phone_num }}" required>
+    </div>
+
+    <!-- 새 비밀번호 입력 (선택적) -->
+    <div class="mb-3">
+      <label for="new_password" class="form-label">새 비밀번호 (변경 시)</label>
+      <input type="password" class="form-control" id="new_password" name="new_password">
+      <div id="newPasswordError" class="error-message">새 비밀번호는 8~16자 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.</div>
+    </div>
+
+    <!-- 새 비밀번호 재확인 입력 -->
+    <div class="mb-3">
+      <label for="new_password_confirm" class="form-label">새 비밀번호 재확인</label>
+      <input type="password" class="form-control" id="new_password_confirm" name="new_password_confirm">
+      <div id="newPasswordMismatch" class="error-message">새 비밀번호가 일치하지 않습니다.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">수정</button>
+  </form>
+</div>
+  <script>
+    $(document).ready(function(){
+      // 비밀번호 정규식: 8~16자, 최소 하나의 영문 소문자, 하나의 영문 대문자, 하나의 숫자, 하나의 특수문자 포함
+      var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,16}$/;
+
+      // 새 비밀번호 실시간 검증
+      $("#new_password").on("blur keyup", function(){
+        var newPassword = $(this).val();
+        if(newPassword) {  // 값이 있을 때만 검증
+          if(!passwordRegex.test(newPassword)){
+            $("#newPasswordError").show();
+          } else {
+            $("#newPasswordError").hide();
+          }
+        } else {
+          $("#newPasswordError").hide();
+        }
+      });
+
+      // 새 비밀번호 재확인 실시간 검증
+      $("#new_password_confirm").on("blur keyup", function(){
+        var newPassword = $("#new_password").val();
+        var newPasswordConfirm = $(this).val();
+        if(newPassword || newPasswordConfirm) {
+          if(newPassword !== newPasswordConfirm){
+            $("#newPasswordMismatch").show();
+          } else {
+            $("#newPasswordMismatch").hide();
+          }
+        } else {
+          $("#newPasswordMismatch").hide();
+        }
+      });
+
+      // 폼 제출 이벤트 처리 (AJAX)
+      $("#updateProfileForm").submit(function(event){
+        event.preventDefault();
+        var newPassword = $("#new_password").val();
+        var newPasswordConfirm = $("#new_password_confirm").val();
+        // 만약 새 비밀번호 필드에 값이 입력되어 있다면, 검증 진행
+        if(newPassword || newPasswordConfirm) {
+          if(newPassword !== newPasswordConfirm) {
+            alert("새 비밀번호와 새 비밀번호 재확인이 일치하지 않습니다.");
+            return false;
+          }
+          if(!passwordRegex.test(newPassword)) {
+            alert("새 비밀번호는 8~16자 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.");
+            return false;
+          }
+        }
+
+        $.ajax({
+          url: "{% url 'update_profile' %}",
+          type: "POST",
+          data: $(this).serialize(),
+          headers: { "X-CSRFToken": "{{ csrf_token }}" },
+          success: function(response){
+            alert(response.message);
+            location.reload();
+          },
+          error: function(xhr){
+            alert("오류: " + xhr.responseJSON.message);
+          }
+        });
+      });
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

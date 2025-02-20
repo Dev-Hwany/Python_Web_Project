@@ -1,0 +1,121 @@
+/* 네비게이션 바 스타일 */
+.navbar {
+   margin-bottom: 50px;
+   background-color: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.navbar-brand {
+  font-weight: bold;
+    font-size: 1.5rem;
+    color: #0056b3;
+}
+.navbar-nav .nav-link {
+  font-size: 16px;
+  color: #333 !important;
+}
+.navbar-nav .nav-item .dropdown-menu {
+  min-width: 150px;
+}
+
+/* 상단 헤더 */
+.schedule-header {
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+.schedule-header h2 {
+  margin: 0;
+}
+
+/* Day 섹션 (예: DAY 1) */
+.day-section {
+  margin-bottom: 40px;
+}
+.day-section h4 {
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* 리스트 전체를 타임라인 형태로 만들기:
+   세로 선(줄)을 그리고, 항목마다 원(circle)을 표시 */
+.day-section .list-group {
+  position: relative;
+  margin: 0 auto;         /* 중앙 정렬 */
+  margin-left: 40px;  /* 왼쪽 여백을 줘서 세로 선+원 공간 */
+  padding-left: 20px;
+  border: none;       /* list-group의 기본 테두리 제거 */
+  max-width: 1000px;  /* 여행 일정 박스 너비 조정 */
+}
+
+/* 세로선 */
+.day-section .list-group::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -15px;   /* 세로선 X좌표 */
+  width: 2px;
+  height: 100%;
+  background-color: #dee2e6;
+}
+
+/* 각 항목의 기본 스타일 */
+.list-group-item {
+  background-color: #f8f9fa;  /* 배경색 #f0f3f5 */
+  border: 1px solid #dee2e6 !important;  /* 테두리 */
+  padding: 15px; !important; /* 안쪽 여백 */
+  border-radius: 5px;  /* 모서리 둥글게 */
+  margin-bottom: 20px;  /* 아래쪽 여백 */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);  /* 그림자 */
+  position: relative; /* 높이 고정 */
+   /* 고정 높이 (예: 120px). 원하는 값으로 조정 가능 */
+  height: 120px;
+}
+
+
+/* 원(circle) 안에 인덱스 번호 표시 */
+.item-index {
+  position: absolute;
+  left: -50px; /* 기존 -10px에서 더 왼쪽(-25px)으로 이동 */
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 26px; /* 수직 가운데 정렬 위해 (height - 4px 정도) */
+  text-align: center;
+
+  background-color: #fff;
+  border: 2px solid #0d6efd;
+  border-radius: 50%;
+  color: #0d6efd;
+  font-weight: bold;
+  z-index: 2;
+}
+
+/* 이미지 */
+.itinerary-item-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 10px;
+  float: left; /* 이미지 왼쪽에 고정, 텍스트 감싸도록 할 수도 있음 */
+}
+
+/* 일정 텍스트 */
+.itinerary-info h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+.itinerary-info p {
+  margin-top:8px !important;
+   margin-bottom:8px !important;
+  margin:0;
+  color: #666;
+  font-size: 0.9rem;
+}

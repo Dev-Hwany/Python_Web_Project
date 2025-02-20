@@ -1,0 +1,28 @@
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* 네비게이션 바 스타일 */
+.navbar {
+   margin-bottom: 50px;
+   background-color: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #0056b3 !important;
+}
+
+.navbar-brand:hover {
+  color: #000 !important;
+  text-decoration: none !important;
+}
+.navbar-nav .nav-link {
+  font-size: 16px;
+  color: #333 !important;
+}
+.navbar-nav .nav-item .dropdown-menu {
+  min-width: 150px;
+}

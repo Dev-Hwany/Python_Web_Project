@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 검색 - 여행 플래너</title>
+    <!-- Bootstrap CSS (CDN 사용) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+   <div class="container mt-5">
+       <h2>여행 검색</h2>
+       <form method="get" action="{% url 'plan_schedule' %}">
+           <div class="mb-3">
+               <label for="destination" class="form-label">여행지명</label>
+               <input type="text" class="form-control" id="destination" name="destination" placeholder="예: 제주도" required>
+           </div>
+           <button type="submit" class="btn btn-primary">검색</button>
+       </form>
+       <br>
+       <a href="{% url 'main_page' %}" class="btn btn-secondary">홈으로</a>
+   </div>
+
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+/* 전체 페이지 스타일 */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* 컨테이너 스타일 */
+.container {
+    max-width: 450px;
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* 제목 스타일 */
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* 설명 문구 스타일 */
+p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* X 버튼 스타일 (오른쪽 상단에 위치) */
+.close-btn {
+    position: absolute;
+    top: 4px; /* 기존 10px에서 5px로 수정하여 위로 올림 */
+    right: 10px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: black; /* X 버튼 색상을 검정으로 설정 */
+    z-index: 1000; /* 다른 요소 위에 표시되도록 설정 */
+}
+
+.close-btn:hover {
+    color: red;
+}
+
+/* 회원 탈퇴 버튼 스타일 */
+.btn-danger {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #d9534f;
+    border: none;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+}
+
+.btn-danger:hover {
+    background: #c9302c;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 500px) {
+    .container {
+        width: 90%;
+        padding: 30px;
+    }
+}

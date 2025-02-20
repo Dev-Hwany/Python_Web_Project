@@ -1,0 +1,100 @@
+{% load static %}
+<div class="container-fluid">
+  <!-- 피드 헤더 -->
+  <div class="d-flex align-items-center mb-3">
+    <div class="profile-box" style="width: 50px; height: 50px; overflow: hidden; border-radius: 50%; margin-right: 10px;">
+      {% if feed.author.profile_image %}
+        <img src="{% get_media_prefix %}{{ feed.author.profile_image }}" alt="프로필 이미지" style="width: 100%; height: 100%; object-fit: cover;">
+      {% else %}
+        <img src="{% static 'images/default_profile.png' %}" alt="기본 프로필" style="width: 100%; height: 100%; object-fit: cover;">
+      {% endif %}
+    </div>
+    <div>
+      <strong>{{ feed.author.name }}</strong>
+    </div>
+  </div>
+
+  <!-- 피드 이미지 & 댓글 영역을 좌우로 분할 -->
+  <div class="row">
+    <!-- 왼쪽: 이미지 -->
+    <div class="col-md-8">
+      {% if feed.image %}
+        <img src="{% get_media_prefix %}{{ feed.image }}" alt="피드 이미지" class="img-fluid">
+      {% endif %}
+    </div>
+    <!-- 오른쪽: 댓글 영역 -->
+    <div class="col-md-4" style="max-height: 600px; overflow-y: auto;">
+      <!-- 좋아요, 북마크 등 액션 -->
+      <div class="d-flex justify-content-between mb-2">
+        <span id="favorite_{{ feed.id }}" feed_id="{{ feed.id }}" class="favorite material-icons" style="color: red; cursor: pointer;">
+          {% if feed.is_liked %}favorite{% else %}favorite_border{% endif %}
+        </span>
+        <span id="bookmark_{{ feed.id }}" feed_id="{{ feed.id }}" class="bookmark material-icons" style="cursor: pointer;">
+          {% if feed.is_marked %}bookmark{% else %}bookmark_border{% endif %}
+        </span>
+      </div>
+      <div class="mb-2">
+        <small class="text-muted">좋아요 {{ feed.like_count }}개</small>
+      </div>
+      <!-- 피드 캡션 -->
+      <div class="mb-3">
+        <strong>{{ feed.author.name }}</strong> {{ feed.content }}
+      </div>
+      <!-- 댓글 목록 -->
+      <div class="feed-replies" id="reply_list_{{ feed.id }}">
+        {% for reply in feed.reply_list %}
+          <div class="reply-item mb-2" data-comment-id="{{ reply.id }}">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ reply.author.name }}</strong>
+                <span class="comment-text">{{ reply.reply_content }}</span>
+              </div>
+              <div>
+                {% if reply.author.email == request.session.user_email %}
+                  <!-- 본인의 댓글이면 드롭다운 메뉴 -->
+                  <div class="dropdown d-inline">
+                    <button class="btn btn-link btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ reply.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                      …
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ reply.id }}">
+                      <li><a class="dropdown-item edit-comment" href="#">수정</a></li>
+                      <li><a class="dropdown-item delete-comment" href="#">삭제</a></li>
+                      <li><a class="dropdown-item cancel-comment" href="#">취소</a></li>
+                    </ul>
+                  </div>
+                {% endif %}
+                <button class="btn btn-link btn-sm reply-to-comment">답글 달기</button>
+              </div>
+            </div>
+            <!-- 인라인 댓글 수정 폼 -->
+            <div class="comment-edit-form">
+              <input type="text" class="form-control form-control-sm reply-edit-input" value="{{ reply.reply_content }}">
+              <button class="btn btn-primary btn-sm save-reply-edit-btn">저장</button>
+              <button class="btn btn-warning btn-sm cancel-reply-edit-btn">취소</button>
+            </div>
+            <!-- 답글 작성 폼 -->
+            <div class="nested-reply-form">
+              <input type="text" class="form-control form-control-sm nested-reply-input" placeholder="답글을 입력하세요.">
+              <button class="btn btn-primary btn-sm submit-nested-reply-btn">게시</button>
+              <button class="btn btn-secondary btn-sm cancel-nested-reply-btn">취소</button>
+            </div>
+            <!-- 중첩 답글 목록 -->
+            <div class="nested-replies mt-1">
+              {% for nested in reply.child_replies %}
+                <div class="nested-reply-item" data-comment-id="{{ nested.id }}">
+                  <strong>{{ nested.author.name }}</strong>
+                  <span class="comment-text">{{ nested.reply_content }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <!-- 댓글 입력 영역 -->
+      <div class="feed-reply-input mt-3">
+        <input type="text" id="reply_{{ feed.id }}" class="form-control" placeholder="댓글 달기...">
+        <button type="button" class="btn btn-primary upload_reply mt-2" feed_id="{{ feed.id }}">게시</button>
+      </div>
+    </div>
+  </div>
+</div>

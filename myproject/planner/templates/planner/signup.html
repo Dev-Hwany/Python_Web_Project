@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입 - 여행 플래너</title>
+  <!-- Bootstrap CSS (CDN 사용) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- jQuery (AJAX 요청 및 검증을 위해 사용) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- 사용자 정의 CSS -->
+  <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+  <style>
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h2>회원가입</h2>
+    <form id="signupForm" method="post">
+      {% csrf_token %}
+      <!-- 이메일 입력 -->
+      <div class="mb-3">
+        <label for="signupEmail" class="form-label">이메일</label>
+        <input type="email" class="form-control" id="signupEmail" name="email" required>
+        <div id="emailError" class="error-message">유효한 이메일 형식이 아닙니다.</div>
+      </div>
+      <!-- 비밀번호 입력 -->
+      <div class="mb-3">
+        <label for="signupPassword" class="form-label">비밀번호</label>
+        <input type="password" class="form-control" id="signupPassword" name="password" required>
+        <div id="passwordError" class="error-message">
+          비밀번호는 8~16자 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.
+        </div>
+      </div>
+      <!-- 비밀번호 재확인 입력 -->
+      <div class="mb-3">
+        <label for="signupPasswordConfirm" class="form-label">비밀번호 재확인</label>
+        <input type="password" class="form-control" id="signupPasswordConfirm" name="password_confirm" required>
+        <div id="passwordMismatchMessage" class="error-message">비밀번호가 일치하지 않습니다.</div>
+      </div>
+      <!-- 이름 입력 -->
+      <div class="mb-3">
+        <label for="signupName" class="form-label">이름</label>
+        <input type="text" class="form-control" id="signupName" name="name" required>
+        <div id="nameError" class="error-message">이름을 입력해 주세요.</div>
+      </div>
+      <!-- 생년월일 입력 -->
+      <div class="mb-3">
+        <label for="signupBirth" class="form-label">생년월일</label>
+        <input type="date" class="form-control" id="signupBirth" name="birth" required>
+        <div id="birthError" class="error-message">생년월일을 입력해 주세요.</div>
+      </div>
+      <!-- 주소 입력 -->
+      <div class="mb-3">
+        <label for="signupAddr" class="form-label">주소</label>
+        <input type="text" class="form-control" id="signupAddr" name="addr" required>
+        <div id="addrError" class="error-message">주소를 입력해 주세요.</div>
+      </div>
+      <!-- 전화번호 입력 -->
+      <div class="mb-3">
+        <label for="signupPhone" class="form-label">전화번호</label>
+        <input type="text" class="form-control" id="signupPhone" name="phone_num" required>
+        <div id="phoneError" class="error-message">전화번호를 입력해 주세요.</div>
+      </div>
+      <button type="submit" class="btn btn-primary">회원가입</button>
+    </form>
+  </div>
+
+  <!-- 디버깅용: 문서 준비가 되었는지 로그 출력 -->
+  <script>
+    $(document).ready(function(){
+      console.log("Document ready - signup 페이지");
+
+      // 정규 표현식 설정
+      var emailRegex = /^[\w\.-]+@[\w\.-]+\.\w+$/;
+      var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,16}$/;
+
+      function validateField(errorSelector, condition, errorMessage) {
+        if (!condition) {
+          $(errorSelector).text(errorMessage).show();
+          return false;
+        } else {
+          $(errorSelector).hide();
+          return true;
+        }
+      }
+
+      // 실시간 검증: 이메일
+      $("#signupEmail").on("blur keyup", function(){
+        var email = $(this).val();
+        validateField("#emailError", emailRegex.test(email), "유효한 이메일 형식이 아닙니다.");
+      });
+
+      // 실시간 검증: 비밀번호
+      $("#signupPassword").on("blur keyup", function(){
+        var password = $(this).val();
+        validateField("#passwordError", passwordRegex.test(password),
+                      "비밀번호는 8~16자 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.");
+      });
+
+      // 실시간 검증: 비밀번호 재확인
+      $("#signupPasswordConfirm").on("blur keyup", function(){
+        var password = $("#signupPassword").val();
+        var passwordConfirm = $(this).val();
+        validateField("#passwordMismatchMessage", password === passwordConfirm,
+                      "비밀번호가 일치하지 않습니다.");
+      });
+
+      // 실시간 검증: 이름
+      $("#signupName").on("blur", function(){
+        var name = $(this).val();
+        validateField("#nameError", name.trim() !== "", "이름을 입력해 주세요.");
+      });
+
+      // 실시간 검증: 생년월일
+      $("#signupBirth").on("blur", function(){
+        var birth = $(this).val();
+        validateField("#birthError", birth.trim() !== "", "생년월일을 입력해 주세요.");
+      });
+
+      // 실시간 검증: 주소
+      $("#signupAddr").on("blur", function(){
+        var addr = $(this).val();
+        validateField("#addrError", addr.trim() !== "", "주소를 입력해 주세요.");
+      });
+
+      // 실시간 검증: 전화번호
+      $("#signupPhone").on("blur", function(){
+        var phone = $(this).val();
+        validateField("#phoneError", phone.trim() !== "", "전화번호를 입력해 주세요.");
+      });
+
+      // 폼 제출 시 최종 검증
+      $("#signupForm").submit(function(event){
+        event.preventDefault();
+        console.log("signupForm submitted");
+
+        var email = $("#signupEmail").val();
+        var password = $("#signupPassword").val();
+        var passwordConfirm = $("#signupPasswordConfirm").val();
+        var name = $("#signupName").val();
+        var birth = $("#signupBirth").val();
+        var addr = $("#signupAddr").val();
+        var phone = $("#signupPhone").val();
+
+        var validEmail = validateField("#emailError", emailRegex.test(email), "유효한 이메일 형식이 아닙니다.");
+        var validPassword = validateField("#passwordError", passwordRegex.test(password),
+                                          "비밀번호는 8~16자 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.");
+        var validPasswordConfirm = validateField("#passwordMismatchMessage", password === passwordConfirm,
+                                                 "비밀번호가 일치하지 않습니다.");
+        var validName = validateField("#nameError", name.trim() !== "", "이름을 입력해 주세요.");
+        var validBirth = validateField("#birthError", birth.trim() !== "", "생년월일을 입력해 주세요.");
+        var validAddr = validateField("#addrError", addr.trim() !== "", "주소를 입력해 주세요.");
+        var validPhone = validateField("#phoneError", phone.trim() !== "", "전화번호를 입력해 주세요.");
+
+        var valid = validEmail && validPassword && validPasswordConfirm && validName && validBirth && validAddr && validPhone;
+        console.log("최종 검증 결과: ", valid);
+        if (!valid) {
+          console.log("폼 검증 실패");
+          return false;
+        }
+
+        $.ajax({
+          url: "{% url 'signup' %}",
+          type: "POST",
+          data: $(this).serialize(),
+          headers: { "X-CSRFToken": "{{ csrf_token }}" },
+          success: function(response){
+            console.log("서버 응답:", response);
+            if(response.status === "success"){
+              alert(response.message);
+              window.location.href = "{% url 'main_page' %}";
+            }
+          },
+          error: function(xhr){
+            console.log("에러 응답:", xhr.responseJSON);
+            alert("오류: " + xhr.responseJSON.message);
+          }
+        });
+      });
+    });
+  </script>
+
+  <!-- Bootstrap JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
